@@ -21,7 +21,7 @@ import { join } from "path";
 program
   .name("dembrandt")
   .description("Extract design tokens from any website")
-  .version("0.7.1")
+  .version("0.7.0")
   .argument("<url>")
   .option("--browser <type>", "Browser to use (chromium|firefox)", "chromium")
   .option("--json-only", "Output raw JSON")
@@ -32,8 +32,6 @@ program
   .option("--slow", "3x longer timeouts for slow-loading sites")
   .option("--brand-guide", "Export a brand guide PDF")
   .option("--no-sandbox", "Disable browser sandbox (needed for Docker/CI)")
-  .option("--raw-colors", "Include pre-filter raw colors in JSON output")
-  .option("--screenshot <path>", "Save a screenshot of the page")
   .action(async (input, opts) => {
     let url = input;
     if (!url.startsWith("http://") && !url.startsWith("https://")) {
@@ -72,7 +70,6 @@ program
             darkMode: opts.darkMode,
             mobile: opts.mobile,
             slow: opts.slow,
-            screenshotPath: opts.screenshot,
           });
           break;
         } catch (err) {
@@ -99,11 +96,6 @@ program
       }
 
       console.log();
-
-      // Strip raw colors unless --raw-colors flag is set
-      if (!opts.rawColors && result.colors && result.colors.rawColors) {
-        delete result.colors.rawColors;
-      }
 
       // Convert to W3C format if requested
       const outputData = opts.dtcg ? toW3CFormat(result) : result;

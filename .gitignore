@@ -42,5 +42,8 @@ INTERNAL.md
 # QA toolchain
 test/report.html
 test/diff-report.md
+test/version-report.html
 test/.tmp/
 test/report-assets/
+test/version-results/
+test/golden/*/
