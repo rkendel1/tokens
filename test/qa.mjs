@@ -202,6 +202,41 @@ function diffSpacing(goldenSpacing, currentSpacing) {
   return { added, removed };
 }
 
+function diffBorderRadius(goldenBR, currentBR) {
+  const goldenVals = new Set((goldenBR?.values || []).map(v => v.value));
+  const currentVals = new Set((currentBR?.values || []).map(v => v.value));
+  return {
+    added: [...currentVals].filter(v => !goldenVals.has(v)),
+    removed: [...goldenVals].filter(v => !currentVals.has(v)),
+  };
+}
+
+function diffShadows(goldenShadows, currentShadows) {
+  const goldenVals = new Set((goldenShadows || []).map(s => s.shadow));
+  const currentVals = new Set((currentShadows || []).map(s => s.shadow));
+  return {
+    added: [...currentVals].filter(v => !goldenVals.has(v)),
+    removed: [...goldenVals].filter(v => !currentVals.has(v)),
+  };
+}
+
+function hasSiteRegression(golden, current) {
+  const cd = diffColors(golden?.colors?.palette, current?.colors?.palette);
+  const td = diffTypography(golden?.typography, current?.typography);
+  const sd = diffSpacing(golden?.spacing, current?.spacing);
+  // Regression = lost colors, lost fonts, or big unexpected additions
+  return cd.removed.length > 0 || td.removed.length > 0 || cd.added.length > 3;
+}
+
+function tokenSummary(golden, current) {
+  const cd = diffColors(golden?.colors?.palette, current?.colors?.palette);
+  const td = diffTypography(golden?.typography, current?.typography);
+  const sd = diffSpacing(golden?.spacing, current?.spacing);
+  const bd = diffBorderRadius(golden?.borderRadius, current?.borderRadius);
+  const shd = diffShadows(golden?.shadows, current?.shadows);
+  return { colors: cd, typography: td, spacing: sd, borderRadius: bd, shadows: shd };
+}
+
 function swatch(hex, size = 28) {
   return `<span class="sw" style="--c:${hex};--s:${size}px" title="${hex}"></span>`;
 }
@@ -211,19 +246,21 @@ function swatchDiff(hex, type, size = 28) {
 }
 
 function generateReport(results) {
-  const regressions = results.filter(r => {
-    const d = diffColors(r.golden?.data?.colors?.palette, r.current?.data?.colors?.palette);
-    return d.added.length > 3 || d.removed.length > 0;
-  }).length;
+  const regressions = results.filter(r =>
+    hasSiteRegression(r.golden?.data, r.current?.data)
+  ).length;
   const ok = regressions === 0;
 
   const rows = results.map(r => {
-    const paletteDiff = diffColors(r.golden?.data?.colors?.palette, r.current?.data?.colors?.palette);
+    const ts = tokenSummary(r.golden?.data, r.current?.data);
     const goldenPalette = r.golden?.data?.colors?.palette || [];
     const currentPalette = r.current?.data?.colors?.palette || [];
-    const addedSet = new Set(paletteDiff.added);
-    const removedSet = new Set(paletteDiff.removed);
-    const hasChanges = paletteDiff.added.length || paletteDiff.removed.length;
+    const addedSet = new Set(ts.colors.added);
+    const anyChange = ts.colors.added.length || ts.colors.removed.length ||
+      ts.typography.added.length || ts.typography.removed.length ||
+      ts.spacing.added.length || ts.spacing.removed.length ||
+      ts.borderRadius.added.length || ts.borderRadius.removed.length ||
+      ts.shadows.added.length || ts.shadows.removed.length;
 
     const goldenImg = r.golden?.screenshotPath
       ? `<img src="file://${r.golden.screenshotPath}">`
@@ -232,12 +269,28 @@ function generateReport(results) {
       ? `<img src="file://${r.current.screenshotPath}">`
       : `<div class="no-img">-</div>`;
 
-    const diffHtml = hasChanges ? [
-      ...paletteDiff.added.map(c => swatchDiff(c, "added")),
-      ...paletteDiff.removed.map(c => swatchDiff(c, "removed")),
-    ].join("") : '<span class="unchanged">-</span>';
+    // Color diff swatches
+    const colorDiffHtml = (ts.colors.added.length || ts.colors.removed.length) ? [
+      ...ts.colors.added.map(c => swatchDiff(c, "added")),
+      ...ts.colors.removed.map(c => swatchDiff(c, "removed")),
+    ].join("") : "";
 
-    return `<tr class="${!r.current ? 'fail' : hasChanges ? 'changed' : ''}">
+    // Token change pills
+    const pills = [];
+    if (ts.typography.added.length) pills.push(`<span class="pill added">+${ts.typography.added.length} font${ts.typography.added.length > 1 ? "s" : ""}</span>`);
+    if (ts.typography.removed.length) pills.push(`<span class="pill removed">-${ts.typography.removed.length} font${ts.typography.removed.length > 1 ? "s" : ""}</span>`);
+    if (ts.spacing.added.length) pills.push(`<span class="pill added">+${ts.spacing.added.length} spacing</span>`);
+    if (ts.spacing.removed.length) pills.push(`<span class="pill removed">-${ts.spacing.removed.length} spacing</span>`);
+    if (ts.borderRadius.added.length) pills.push(`<span class="pill added">+${ts.borderRadius.added.length} radius</span>`);
+    if (ts.borderRadius.removed.length) pills.push(`<span class="pill removed">-${ts.borderRadius.removed.length} radius</span>`);
+    if (ts.shadows.added.length) pills.push(`<span class="pill added">+${ts.shadows.added.length} shadow${ts.shadows.added.length > 1 ? "s" : ""}</span>`);
+    if (ts.shadows.removed.length) pills.push(`<span class="pill removed">-${ts.shadows.removed.length} shadow${ts.shadows.removed.length > 1 ? "s" : ""}</span>`);
+
+    const diffHtml = (colorDiffHtml || pills.length)
+      ? `${colorDiffHtml}${pills.length ? '<div class="token-pills">' + pills.join("") + '</div>' : ""}`
+      : '<span class="unchanged">-</span>';
+
+    return `<tr class="${!r.current ? 'fail' : anyChange ? 'changed' : ''}">
       <td class="domain">${r.domain}</td>
       <td class="shots"><div class="shot-pair">${goldenImg}${currentImg}</div></td>
       <td class="colors">${goldenPalette.map(c => swatch(c.normalized, 22)).join("")}</td>
@@ -279,6 +332,10 @@ tr.fail td.domain{color:#f85149}
 .sw.removed{border:2px solid #f85149;opacity:.5}
 .diff{min-width:60px}
 .unchanged{color:#333;font-size:11px}
+.token-pills{margin-top:4px}
+.pill{display:inline-block;font-size:10px;padding:1px 6px;border-radius:3px;margin:1px 2px}
+.pill.added{color:#3fb950;background:rgba(63,185,80,0.1)}
+.pill.removed{color:#f85149;background:rgba(248,81,73,0.1)}
 </style>
 </head>
 <body>
@@ -294,33 +351,29 @@ ${rows}
 }
 
 function generateMarkdownReport(results) {
+  const regressions = results.filter(r =>
+    hasSiteRegression(r.golden?.data, r.current?.data)
+  ).length;
+
   let md = `## Dembrandt QA Report\n\n`;
-  md += `Generated: ${new Date().toISOString()} | Sites: ${results.length}\n\n`;
+  md += `${new Date().toISOString().slice(0,10)} | ${results.length} sites | ${regressions === 0 ? "OK" : regressions + " regression(s)"}\n\n`;
+  md += `| Site | Colors | Typography | Spacing | Radius | Shadows |\n`;
+  md += `|------|--------|------------|---------|--------|---------|\n`;
 
   for (const r of results) {
-    const paletteDiff = diffColors(
-      r.golden?.data?.colors?.palette,
-      r.current?.data?.colors?.palette
-    );
-    const goldenCount = r.golden?.data?.colors?.palette?.length || 0;
-    const currentCount = r.current?.data?.colors?.palette?.length || 0;
-    const delta = currentCount - goldenCount;
-    const deltaStr = delta === 0 ? "=" : delta > 0 ? `+${delta}` : `${delta}`;
-    const icon = delta === 0 ? "=" : delta < 0 ? "v" : "^";
+    const ts = tokenSummary(r.golden?.data, r.current?.data);
 
-    md += `### ${r.domain} ${icon} ${deltaStr} colors (${goldenCount} -> ${currentCount})\n\n`;
+    const fmt = (d) => {
+      const parts = [];
+      if (d.added.length) parts.push(`+${d.added.length}`);
+      if (d.removed.length) parts.push(`-${d.removed.length}`);
+      return parts.length ? parts.join(" ") : "-";
+    };
 
-    if (paletteDiff.added.length) {
-      md += `**Added:** ${paletteDiff.added.join(", ")}\n\n`;
-    }
-    if (paletteDiff.removed.length) {
-      md += `**Removed:** ${paletteDiff.removed.join(", ")}\n\n`;
-    }
-    if (!paletteDiff.added.length && !paletteDiff.removed.length) {
-      md += `No palette changes.\n\n`;
-    }
+    md += `| ${r.domain} | ${fmt(ts.colors)} | ${fmt(ts.typography)} | ${fmt(ts.spacing)} | ${fmt(ts.borderRadius)} | ${fmt(ts.shadows)} |\n`;
   }
 
+  md += `\n`;
   return md;
 }
 
@@ -359,21 +412,20 @@ async function main() {
       console.log(`    No golden for ${domain} — run --baseline first`);
     }
 
-    const paletteDiff = diffColors(
-      golden?.data?.colors?.palette,
-      current?.data?.colors?.palette
-    );
-    const delta =
-      (current?.data?.colors?.palette?.length || 0) -
-      (golden?.data?.colors?.palette?.length || 0);
-
-    if (delta > 3) {
+    if (hasSiteRegression(golden?.data, current?.data)) {
       regressions++;
-      console.log(`    REGRESSION: +${delta} colors`);
-    } else if (delta < 0) {
-      console.log(`    IMPROVEMENT: ${delta} colors`);
+      console.log(`    REGRESSION`);
     } else {
-      console.log(`    OK (delta: ${delta})`);
+      const ts = tokenSummary(golden?.data, current?.data);
+      const changes = [
+        ts.colors.added.length && `+${ts.colors.added.length} colors`,
+        ts.colors.removed.length && `-${ts.colors.removed.length} colors`,
+        ts.typography.added.length && `+${ts.typography.added.length} fonts`,
+        ts.typography.removed.length && `-${ts.typography.removed.length} fonts`,
+        ts.spacing.added.length && `+${ts.spacing.added.length} spacing`,
+        ts.spacing.removed.length && `-${ts.spacing.removed.length} spacing`,
+      ].filter(Boolean);
+      console.log(`    ${changes.length ? changes.join(", ") : "OK"}`);
     }
 
     results.push({
