@@ -36,7 +36,11 @@ program
   .option("--no-sandbox", "Disable browser sandbox (needed for Docker/CI)")
   .option("--raw-colors", "Include pre-filter raw colors in JSON output")
   .option("--screenshot <path>", "Save a screenshot of the page")
-  .option("--pages <n>", "Crawl up to N internal pages (default: 5)", (v) => parseInt(v, 10))
+  .option("--pages <n>", "Crawl up to N internal pages (default: 5)", (v) => {
+    const n = parseInt(v, 10);
+    if (isNaN(n) || n < 1) throw new Error(`--pages must be a positive integer, got: ${v}`);
+    return n;
+  })
   .option("--sitemap", "Discover pages from sitemap.xml instead of DOM links")
   .action(async (input, opts) => {
     let url = input;
