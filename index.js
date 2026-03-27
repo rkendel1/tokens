@@ -15,6 +15,8 @@ import { extractBranding } from "./lib/extractors.js";
 import { displayResults } from "./lib/display.js";
 import { toW3CFormat } from "./lib/w3c-exporter.js";
 import { generatePDF } from "./lib/pdf.js";
+import { discoverLinks, parseSitemap } from "./lib/discovery.js";
+import { mergeResults } from "./lib/merger.js";
 import { writeFileSync, mkdirSync } from "fs";
 import { join } from "path";
 
@@ -34,6 +36,8 @@ program
   .option("--no-sandbox", "Disable browser sandbox (needed for Docker/CI)")
   .option("--raw-colors", "Include pre-filter raw colors in JSON output")
   .option("--screenshot <path>", "Save a screenshot of the page")
+  .option("--pages <n>", "Crawl up to N internal pages (default: 5)", (v) => parseInt(v, 10))
+  .option("--sitemap", "Discover pages from sitemap.xml instead of DOM links")
   .action(async (input, opts) => {
     let url = input;
     if (!url.startsWith("http://") && !url.startsWith("https://")) {
@@ -67,13 +71,85 @@ program
         });
 
         try {
+          const isMultiPage = opts.pages || opts.sitemap;
           result = await extractBranding(url, spinner, browser, {
             navigationTimeout: 90000,
             darkMode: opts.darkMode,
             mobile: opts.mobile,
             slow: opts.slow,
             screenshotPath: opts.screenshot,
+            discoverLinks: isMultiPage && !opts.sitemap,
           });
+
+          // Multi-page crawl
+          if (isMultiPage) {
+            const maxPages = opts.pages || 5;
+            spinner.start("Discovering pages...");
+
+            let additionalUrls;
+            if (opts.sitemap) {
+              additionalUrls = await parseSitemap(url, maxPages);
+            } else {
+              // _internalLinks was collected during extraction — score and rank them
+              const rawLinks = result._internalLinks || [];
+              const homepagePath = new URL(url).pathname.replace(/\/$/, '') || '/';
+              const { scoreUrl } = await import('./lib/discovery.js');
+              const seen = new Set([homepagePath]);
+              additionalUrls = rawLinks
+                .filter(href => {
+                  try {
+                    const p = new URL(href).pathname.replace(/\/$/, '') || '/';
+                    if (seen.has(p)) return false;
+                    seen.add(p);
+                    return true;
+                  } catch { return false; }
+                })
+                .map(href => ({ href, score: scoreUrl(new URL(href).pathname) }))
+                .filter(l => l.score >= 0)
+                .sort((a, b) => b.score - a.score)
+                .slice(0, maxPages)
+                .map(l => l.href);
+            }
+
+            delete result._internalLinks;
+
+            if (additionalUrls.length === 0) {
+              spinner.warn("No additional pages discovered");
+            } else {
+              spinner.stop();
+              console.log(chalk.dim(`  Found ${additionalUrls.length} page(s) to analyze`));
+
+              const allResults = [result];
+              for (let i = 0; i < additionalUrls.length; i++) {
+                const pageUrl = additionalUrls[i];
+                const pageNum = i + 2;
+                const total = additionalUrls.length + 1;
+                spinner.start(`Extracting page ${pageNum}/${total}: ${new URL(pageUrl).pathname}`);
+
+                // Polite delay between pages
+                await new Promise(r => setTimeout(r, 2000 + Math.random() * 3000));
+
+                try {
+                  const pageResult = await extractBranding(pageUrl, spinner, browser, {
+                    navigationTimeout: 90000,
+                    darkMode: opts.darkMode,
+                    mobile: opts.mobile,
+                    slow: opts.slow,
+                  });
+                  delete pageResult._internalLinks;
+                  allResults.push(pageResult);
+                } catch (err) {
+                  spinner.warn(`Skipping ${pageUrl}: ${err.message.slice(0, 80)}`);
+                }
+              }
+
+              spinner.stop();
+              result = mergeResults(allResults);
+            }
+          } else {
+            delete result._internalLinks;
+          }
+
           break;
         } catch (err) {
           await browser.close();
