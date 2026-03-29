@@ -15,7 +15,7 @@ import { extractBranding } from "./lib/extractors.js";
 import { displayResults } from "./lib/display.js";
 import { toW3CFormat } from "./lib/w3c-exporter.js";
 import { generatePDF } from "./lib/pdf.js";
-import { scoreUrl, parseSitemap } from "./lib/discovery.js";
+import { parseSitemap } from "./lib/discovery.js";
 import { mergeResults } from "./lib/merger.js";
 import { writeFileSync, mkdirSync } from "fs";
 import { join } from "path";
@@ -76,45 +76,28 @@ program
 
         try {
           const isMultiPage = opts.pages || opts.sitemap;
+          const maxPages = opts.pages || 5;
           result = await extractBranding(url, spinner, browser, {
             navigationTimeout: 90000,
             darkMode: opts.darkMode,
             mobile: opts.mobile,
             slow: opts.slow,
             screenshotPath: opts.screenshot,
-            discoverLinks: isMultiPage && !opts.sitemap,
+            discoverLinks: isMultiPage && !opts.sitemap ? maxPages : null,
           });
 
           // Multi-page crawl
           if (isMultiPage) {
-            const maxPages = opts.pages || 5;
             spinner.start("Discovering pages...");
 
             let additionalUrls;
             if (opts.sitemap) {
               additionalUrls = await parseSitemap(url, maxPages);
             } else {
-              // _internalLinks was collected during extraction — score and rank them
-              const rawLinks = result._internalLinks || [];
-              const homepagePath = new URL(url).pathname.replace(/\/$/, '') || '/';
-              const seen = new Set([homepagePath]);
-              additionalUrls = rawLinks
-                .filter(href => {
-                  try {
-                    const p = new URL(href).pathname.replace(/\/$/, '') || '/';
-                    if (seen.has(p)) return false;
-                    seen.add(p);
-                    return true;
-                  } catch { return false; }
-                })
-                .map(href => ({ href, score: scoreUrl(new URL(href).pathname) }))
-                .filter(l => l.score >= 0)
-                .sort((a, b) => b.score - a.score)
-                .slice(0, maxPages)
-                .map(l => l.href);
+              additionalUrls = result._discoveredLinks || [];
             }
 
-            delete result._internalLinks;
+            delete result._discoveredLinks;
 
             if (additionalUrls.length === 0) {
               spinner.warn("No additional pages discovered");
@@ -139,10 +122,10 @@ program
                     mobile: opts.mobile,
                     slow: opts.slow,
                   });
-                  delete pageResult._internalLinks;
+                  delete pageResult._discoveredLinks;
                   allResults.push(pageResult);
                 } catch (err) {
-                  spinner.warn(`Skipping ${pageUrl}: ${err.message.slice(0, 80)}`);
+                  spinner.warn(`Skipping ${pageUrl}: ${String(err?.message || err).slice(0, 80)}`);
                 }
               }
 
@@ -150,7 +133,7 @@ program
               result = mergeResults(allResults);
             }
           } else {
-            delete result._internalLinks;
+            delete result._discoveredLinks;
           }
 
           break;
