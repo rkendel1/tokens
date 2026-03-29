@@ -36,7 +36,7 @@ program
   .option("--no-sandbox", "Disable browser sandbox (needed for Docker/CI)")
   .option("--raw-colors", "Include pre-filter raw colors in JSON output")
   .option("--screenshot <path>", "Save a screenshot of the page")
-  .option("--pages <n>", "Crawl up to N internal pages (default: 5)", (v) => {
+  .option("--pages <n>", "Analyze up to N total pages including start URL (default: 5)", (v) => {
     const n = parseInt(v, 10);
     if (isNaN(n) || n < 1) throw new Error(`--pages must be a positive integer, got: ${v}`);
     return n;
@@ -76,7 +76,7 @@ program
 
         try {
           const isMultiPage = opts.pages || opts.sitemap;
-          const maxPages = opts.pages || 5;
+          const maxPages = (opts.pages || 5) - 1; // -1 because homepage counts
           result = await extractBranding(url, spinner, browser, {
             navigationTimeout: 90000,
             darkMode: opts.darkMode,
@@ -87,12 +87,18 @@ program
           });
 
           // Multi-page crawl
-          if (isMultiPage) {
+          if (isMultiPage && maxPages > 0) {
             spinner.start("Discovering pages...");
 
             let additionalUrls;
             if (opts.sitemap) {
+              // Try post-redirect URL first, fall back to user-provided URL
+              // (sites like spotify.com redirect browser to open.spotify.com
+              // but sitemap lives at www.spotify.com)
               additionalUrls = await parseSitemap(result.url, maxPages);
+              if (additionalUrls.length === 0 && result.url !== url) {
+                additionalUrls = await parseSitemap(url, maxPages);
+              }
             } else {
               additionalUrls = result._discoveredLinks || [];
             }
