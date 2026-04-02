@@ -34,13 +34,15 @@ Requires Node.js 18+
 
 ## AI Agent Integration (MCP)
 
-Use Dembrandt as a tool in Claude Code, Cursor, Windsurf, or any MCP-compatible client. Ask your agent to "extract the color palette from stripe.com" and it calls Dembrandt automatically.
+Use Dembrandt as a tool in Claude Code, Cursor, Windsurf, or any MCP-compatible AI client. Ask your agent to "extract the color palette from stripe.com" and it calls Dembrandt automatically — no CLI, no copy-paste.
+
+**Claude Code:**
 
 ```bash
 claude mcp add --transport stdio dembrandt -- npx -y dembrandt-mcp
 ```
 
-Or add to your project's `.mcp.json`:
+**Any MCP client** — add to `.mcp.json` or `claude_desktop_config.json`:
 
 ```json
 {
@@ -53,7 +55,19 @@ Or add to your project's `.mcp.json`:
 }
 ```
 
-7 tools available: `get_design_tokens`, `get_color_palette`, `get_typography`, `get_component_styles`, `get_surfaces`, `get_spacing`, `get_brand_identity`.
+### Available Tools
+
+| Tool | What it returns |
+|------|----------------|
+| `get_design_tokens` | Full design system — all tokens in one call. Colors, typography, spacing, borders, shadows, components, breakpoints, logo, frameworks. Takes 15–40s depending on site complexity. |
+| `get_color_palette` | Semantic colors (primary/secondary/accent), full palette ranked by usage and confidence (high/medium/low), CSS custom properties, hover/focus state colors. Every color in hex, RGB, LCH, and OKLCH. Supports `darkMode` flag. |
+| `get_typography` | Font families with fallback stacks, complete type scale by context (heading/body/button/link/caption) with px, rem, weight, line-height, letter-spacing. Reports Google Fonts, Adobe Fonts, and variable font usage. |
+| `get_component_styles` | Button variants with default/hover/active/focus states, input field styles, link styles, badge styles. |
+| `get_surfaces` | Border radii with element context (button vs card vs modal), border patterns (width + style + color), box shadow elevation levels. |
+| `get_spacing` | Margin/padding values by frequency, px and rem, grid system detection (4px, 8px, or custom scale). |
+| `get_brand_identity` | Site name, logo (source, dimensions, safe zone), all favicon variants, detected CSS frameworks (Tailwind, Bootstrap, MUI…), icon systems, responsive breakpoints. |
+
+All tools accept a `slow` flag for JavaScript-heavy sites (3× timeouts).
 
 ## What to expect from extraction?
 

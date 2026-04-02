@@ -190,6 +190,32 @@ npm publish
 npx dembrandt@latest stripe.com
 ```
 
+## README Update Guidelines
+
+README.md is the product's front door. Keep it lean and honest.
+
+**What belongs in README:**
+- CLI flags — every new flag gets one line in the Usage table, no more
+- New sections only for features significant enough to need a usage example (e.g. `--pages`, `--dtcg`)
+- MCP tools — name + one sentence of what it returns, in the table
+- Limitations — add if there's a real gotcha users will hit
+
+**What does not belong in README:**
+- Benefits, outcomes, promises ("never again waste hours…")
+- Comparisons to other tools
+- Roadmap or coming soon items
+- Repeated explanations of the same flag in multiple places
+- Architecture detail — that lives in CLAUDE.md
+
+**Tone:**
+- Describe what the tool does, not what it enables you to dream of
+- One sentence per feature, max two
+- If you can't explain it in one sentence, the feature may not be ready to document
+
+**Size check:**
+- Before adding a section, read the existing README top to bottom
+- If adding more than ~10 lines, consider whether something can be removed or collapsed instead
+
 ## Contributing Guidelines
 
 1. **Code style:**
