@@ -93,10 +93,12 @@ program
         if (opts.noSandbox && opts.browser === 'chromium') {
           launchArgs.push("--no-sandbox", "--disable-setuid-sandbox");
         }
-        browser = await browserType.launch({
-          headless: !useHeaded,
-          args: launchArgs,
-        });
+        browser = process.env.BROWSER_CDP_ENDPOINT
+          ? await chromium.connectOverCDP(process.env.BROWSER_CDP_ENDPOINT)
+          : await browserType.launch({
+              headless: !useHeaded,
+              args: launchArgs,
+            });
 
         try {
           const isMultiPage = opts.pages || opts.sitemap;
