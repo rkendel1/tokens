@@ -1,3 +1,5 @@
+[![MseeP.ai Security Assessment Badge](https://mseep.net/pr/dembrandt-dembrandt-badge.png)](https://mseep.ai/app/dembrandt-dembrandt)
+
 # Dembrandt.
 
 [![npm version](https://img.shields.io/npm/v/dembrandt.svg)](https://www.npmjs.com/package/dembrandt)
