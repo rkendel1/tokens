@@ -57,6 +57,13 @@ interface ExtractionResult {
   breakpoints?: Array<{ px: number }>
   iconSystem?: Array<{ name: string; type: string }>
   frameworks?: Array<{ name: string; confidence: string; evidence?: string }>
+  contacts?: {
+    emails?: Array<{ value: string; source: string; confidence: string }>
+    phones?: Array<{ value: string; formatted: string; source: string; confidence: string }>
+    addresses?: Array<{ value: string; source: string; confidence: string }>
+    hours?: Array<{ value: string; source: string; confidence: string }>
+    names?: Array<{ value: string; source: string; confidence: string }>
+  }
 }
 
 interface SavedFileEntry {
@@ -289,6 +296,7 @@ function App() {
     ...(result.frameworks && result.frameworks.length > 0 ? [{ id: 'frameworks', label: 'Frameworks' }] : []),
     ...(result.iconSystem && result.iconSystem.length > 0 ? [{ id: 'icon-systems', label: 'Icon Systems' }] : []),
     ...(result.breakpoints && result.breakpoints.length > 0 ? [{ id: 'breakpoints', label: 'Breakpoints' }] : []),
+    ...(result.contacts && (result.contacts.emails?.length || result.contacts.phones?.length || result.contacts.addresses?.length || result.contacts.hours?.length || result.contacts.names?.length) ? [{ id: 'contacts', label: 'Contact' }] : []),
   ] : []
 
   return (
@@ -825,6 +833,102 @@ function App() {
                         </span>
                       ))}
                     </div>
+                  </section>
+                )}
+
+                {/* Contact Information */}
+                {result.contacts && (result.contacts.emails?.length || result.contacts.phones?.length || result.contacts.addresses?.length || result.contacts.hours?.length || result.contacts.names?.length) && (
+                  <section id="contacts">
+                    <h3 className="text-secondary text-xs uppercase tracking-wider mb-4">Contact Information</h3>
+                    
+                    {/* Emails */}
+                    {result.contacts.emails && result.contacts.emails.length > 0 && (
+                      <div className="mb-6">
+                        <h4 className="text-brand text-sm font-medium mb-3">📧 Emails ({result.contacts.emails.length})</h4>
+                        <div className="space-y-2">
+                          {result.contacts.emails.map((email, i) => (
+                            <div key={i} className="bg-surface border border-border rounded-lg p-3">
+                              <a href={`mailto:${email.value}`} className="text-primary hover:text-brand transition-colors break-all">
+                                {email.value}
+                              </a>
+                              <div className="text-tertiary text-xs mt-1">
+                                Source: {email.source} • Confidence: {email.confidence}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Phone Numbers */}
+                    {result.contacts.phones && result.contacts.phones.length > 0 && (
+                      <div className="mb-6">
+                        <h4 className="text-brand text-sm font-medium mb-3">📱 Phone Numbers ({result.contacts.phones.length})</h4>
+                        <div className="space-y-2">
+                          {result.contacts.phones.map((phone, i) => (
+                            <div key={i} className="bg-surface border border-border rounded-lg p-3">
+                              <a href={`tel:${phone.value}`} className="text-primary hover:text-brand transition-colors">
+                                {phone.formatted || phone.value}
+                              </a>
+                              <div className="text-tertiary text-xs mt-1">
+                                Source: {phone.source} • Confidence: {phone.confidence}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Addresses */}
+                    {result.contacts.addresses && result.contacts.addresses.length > 0 && (
+                      <div className="mb-6">
+                        <h4 className="text-brand text-sm font-medium mb-3">📍 Addresses ({result.contacts.addresses.length})</h4>
+                        <div className="space-y-2">
+                          {result.contacts.addresses.map((address, i) => (
+                            <div key={i} className="bg-surface border border-border rounded-lg p-3">
+                              <p className="text-primary">{address.value}</p>
+                              <div className="text-tertiary text-xs mt-1">
+                                Source: {address.source} • Confidence: {address.confidence}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Business Hours */}
+                    {result.contacts.hours && result.contacts.hours.length > 0 && (
+                      <div className="mb-6">
+                        <h4 className="text-brand text-sm font-medium mb-3">🕐 Business Hours ({result.contacts.hours.length})</h4>
+                        <div className="space-y-2">
+                          {result.contacts.hours.map((hours, i) => (
+                            <div key={i} className="bg-surface border border-border rounded-lg p-3">
+                              <p className="text-primary whitespace-pre-line">{hours.value}</p>
+                              <div className="text-tertiary text-xs mt-1">
+                                Source: {hours.source} • Confidence: {hours.confidence}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Business Names */}
+                    {result.contacts.names && result.contacts.names.length > 0 && (
+                      <div className="mb-6">
+                        <h4 className="text-brand text-sm font-medium mb-3">🏢 Business Names ({result.contacts.names.length})</h4>
+                        <div className="space-y-2">
+                          {result.contacts.names.map((name, i) => (
+                            <div key={i} className="bg-surface border border-border rounded-lg p-3">
+                              <p className="text-primary">{name.value}</p>
+                              <div className="text-tertiary text-xs mt-1">
+                                Source: {name.source} • Confidence: {name.confidence}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                   </section>
                 )}
                 </div>

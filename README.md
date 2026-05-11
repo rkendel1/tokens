@@ -8,17 +8,195 @@ Extract a website's design system into design tokens in a few seconds: logo, col
 
 ![Dembrandt — Any website to design tokens](https://raw.githubusercontent.com/dembrandt/dembrandt/main/docs/images/banner.png)
 
-## Install
+# Design Token & Contact Extractor
 
-Install globally: `npm install -g dembrandt`
+Extract design tokens and contact information from any website.
 
+## Setup
+
+1. Clone the repository:
 ```bash
-dembrandt example.com
+git clone https://github.com/rkendel1/tokens.git
+cd tokens
 ```
 
-Or use npx without installing: `npx dembrandt example.com`
+2. Install dependencies:
+```bash
+npm install
+```
 
-Requires Node.js 18+
+3. Install browsers (required for Playwright):
+```bash
+npm run install-browser
+```
+
+## Usage
+
+Run the extractor directly with Node:
+
+```bash
+# Basic extraction
+node index.js example.com
+
+# Extract only contact information
+node index.js example.com --contact-only
+
+# Save output to file
+node index.js example.com --save-output
+
+# Extract with dark mode
+node index.js example.com --dark-mode
+
+# Multiple pages
+node index.js example.com --pages 10
+
+# JSON output
+node index.js example.com --json-only
+
+# All options
+node index.js example.com --contact-only --json-only --save-output
+```
+
+### Using npm scripts
+
+```bash
+# Run with npm start (you'll need to edit package.json to add URL)
+npm start example.com
+
+# Or use the extract alias
+npm run extract example.com
+```
+
+### Create a shell alias (optional)
+
+Add to your `~/.bashrc` or `~/.zshrc`:
+
+```bash
+alias extract-tokens='node /path/to/tokens/index.js'
+```
+
+Then use:
+```bash
+extract-tokens example.com --contact-only
+```
+
+## Local Web UI
+
+Launch the web interface:
+
+```bash
+npm run local-ui
+```
+
+Then open http://localhost:5173 in your browser.
+
+## Available Options
+
+```
+Options:
+  --browser <type>     Browser to use (chromium|firefox) (default: "chromium")
+  --json-only          Output raw JSON
+  --save-output        Save JSON file to output folder
+  --dtcg               Export in W3C Design Tokens (DTCG) format
+  --dark-mode          Extract colors from dark mode
+  --mobile             Extract from mobile viewport
+  --slow               3x longer timeouts for slow-loading sites
+  --brand-guide        Export a brand guide PDF
+  --design-md          Export a DESIGN.md file
+  --no-sandbox         Disable browser sandbox (needed for Docker/CI)
+  --raw-colors         Include pre-filter raw colors in JSON output
+  --screenshot <path>  Save a screenshot of the page
+  --pages <n>          Analyze up to N total pages (default: 5)
+  --sitemap            Discover pages from sitemap.xml
+  --contact-only       Extract only contact information
+```
+
+## What Gets Extracted
+
+### Design Tokens
+- **Colors**: Semantic colors, palette, CSS variables
+- **Typography**: Fonts, sizes, weights, sources (Google Fonts, Adobe Fonts)
+- **Spacing**: Margin/padding scales
+- **Shadows**: Box shadows
+- **Borders**: Border radius, widths, styles, colors
+- **Components**: Buttons, links, inputs (with hover/focus states)
+- **Breakpoints**: Responsive breakpoints
+- **Logo & Favicons**: Brand assets
+- **Frameworks**: Detected CSS frameworks
+- **Icon Systems**: Icon libraries in use
+
+### Contact Information
+- **Emails**: Found in mailto: links and text
+- **Phone Numbers**: From tel: links and various formats
+- **Addresses**: Physical addresses with street, city, state, ZIP
+- **Business Hours**: Operating hours
+- **Business Names**: From meta tags and structured data
+
+## Output
+
+Results are saved to `output/<domain>/` directory:
+- JSON files with timestamps
+- Optional PDF brand guides
+- Optional DESIGN.md files
+
+## Examples
+
+```bash
+# Quick contact extraction
+node index.js https://www.billswelding.com/contact_us --contact-only
+
+# Full design system + save files
+node index.js stripe.com --save-output --brand-guide
+
+# JSON only (no terminal output)
+node index.js example.com --json-only > design-tokens.json
+
+# Multi-page crawl
+node index.js example.com --pages 20 --sitemap
+```
+
+## Requirements
+
+- Node.js 18+
+- ~1GB disk space for Playwright browsers
+
+## Troubleshooting
+
+### Browser Installation Issues
+
+If browsers don't install automatically:
+```bash
+npx playwright install chromium firefox
+```
+
+### Linux Dependencies
+
+On Linux, you may need system dependencies:
+```bash
+npx playwright install-deps
+```
+
+### Permission Errors
+
+If you get permission errors, try:
+```bash
+node index.js example.com --no-sandbox
+```
+
+## Project Structure
+
+```
+tokens/
+├── index.js           # Main CLI entry point
+├── lib/
+│   ├── extractors.js  # Extraction logic
+│   ├── display.js     # Terminal output formatting
+│   ├── merger.js      # Multi-page result merging
+│   ├── pdf.js         # PDF generation
+│   └── ...
+├── local-ui/          # Web interface
+└── output/            # Generated files
+```
 
 ## AI Agent Integration (MCP)
 

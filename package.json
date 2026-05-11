@@ -1,23 +1,15 @@
 {
-  "name": "dembrandt",
-  "version": "0.11.0",
-  "description": "Extract design tokens and publicly visible CSS information from any website",
-  "mcpName": "io.github.dembrandt/dembrandt",
+  "name": "tokens-extractor",
+  "version": "0.11.1",
+  "description": "Extract design tokens and contact information from websites",
+  "private": true,
   "main": "index.js",
   "type": "module",
-  "bin": {
-    "dembrandt": "index.js",
-    "dembrandt-mcp": "mcp-server.js"
-  },
-  "files": [
-    "index.js",
-    "mcp-server.js",
-    "lib/"
-  ],
   "scripts": {
     "start": "node index.js",
+    "extract": "node index.js",
+    "local-ui": "cd local-ui && npm install && npm start",
     "install-browser": "npx playwright install chromium firefox || echo 'Playwright browser installation failed. You may need to install system dependencies manually.'",
-    "local-ui": "cd local-ui && npm start",
     "qa:baseline": "node test/qa.mjs --baseline",
     "qa:diff": "node test/qa.mjs --diff",
     "qa:site": "node test/qa.mjs --site"
@@ -27,18 +19,16 @@
     "design-system",
     "branding",
     "css-analysis",
-    "cli",
     "playwright"
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/dembrandt/dembrandt.git"
+    "url": "git+https://github.com/rkendel1/tokens.git"
   },
   "bugs": {
-    "url": "https://github.com/dembrandt/dembrandt/issues"
+    "url": "https://github.com/rkendel1/tokens/issues"
   },
-  "homepage": "https://dembrandt.com",
-  "author": "thevangelist <info@esajuhana.com>",
+  "homepage": "https://github.com/rkendel1/tokens",
   "license": "MIT",
   "dependencies": {
     "@modelcontextprotocol/sdk": "1.29.0",
