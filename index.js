@@ -25,7 +25,7 @@ import { checkRobotsTxt } from "./lib/robots.js";
 program
   .name("dembrandt")
   .description("Extract design tokens from any website")
-  .version("0.11.0")
+  .version("0.11.1")
   .argument("<url>")
   .option("--browser <type>", "Browser to use (chromium|firefox); set BROWSER_CDP_ENDPOINT env var to connect to an existing Chromium instance via CDP", "chromium")
   .option("--json-only", "Output raw JSON")
