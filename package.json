@@ -29,7 +29,6 @@
     "url": "https://github.com/rkendel1/tokens/issues"
   },
   "homepage": "https://github.com/rkendel1/tokens",
-  "author": "",
   "license": "MIT",
   "dependencies": {
     "@modelcontextprotocol/sdk": "1.29.0",
