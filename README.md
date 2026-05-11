@@ -69,6 +69,7 @@ dembrandt example.com --design-md      # Generate a DESIGN.md file for AI agents
 dembrandt example.com --pages 5        # Analyze 5 pages (homepage + 4 discovered pages), merges results
 dembrandt example.com --sitemap        # Discover pages from sitemap.xml instead of DOM links
 dembrandt example.com --pages 10 --sitemap # Combine: up to 10 pages discovered via sitemap
+dembrandt example.com --contact-only   # Extract only contact information (emails, phones, addresses, hours)
 dembrandt example.com --no-sandbox     # Disable Chromium sandbox (required for Docker/CI)
 dembrandt example.com --browser=firefox # Use Firefox instead of Chromium (better for Cloudflare bypass)
 ```
@@ -148,6 +149,34 @@ Use `--brand-guide` to generate a printable PDF summarizing the extracted design
 dembrandt example.com --brand-guide
 # Saves to: output/example.com/TIMESTAMP.brand-guide.pdf
 ```
+
+### Contact Information Extraction
+
+Extract contact information (emails, phone numbers, addresses, business hours, and names) from any website. Dembrandt automatically extracts contact information alongside design tokens, or you can use `--contact-only` for focused extraction.
+
+```bash
+# Extract only contact information (faster, focused output)
+dembrandt example.com/contact --contact-only
+
+# Extract contact info as JSON
+dembrandt example.com/contact --contact-only --json-only
+
+# Full extraction includes contact info automatically
+dembrandt example.com
+```
+
+**What's extracted:**
+- **Emails**: From mailto: links and text patterns
+- **Phone numbers**: From tel: links and text patterns (various formats)
+- **Addresses**: Physical addresses with street, city, state, ZIP
+- **Business hours**: Operating hours in various formats
+- **Business names**: From meta tags and structured data
+
+**Contact extraction features:**
+- Searches footer, contact sections, and page-wide content
+- Handles multiple formats (US/international phones, various address formats)
+- Confidence scoring (high/medium based on source)
+- Multi-page support (use `--pages` to extract from multiple pages)
 
 ## Local UI
 
