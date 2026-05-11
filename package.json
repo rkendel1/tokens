@@ -32,12 +32,12 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/dembrandt/dembrandt.git"
+    "url": "git+https://github.com/rkendel1/tokens.git"
   },
   "bugs": {
-    "url": "https://github.com/dembrandt/dembrandt/issues"
+    "url": "https://github.com/rkendel1/tokens/issues"
   },
-  "homepage": "https://dembrandt.com",
+  "homepage": "https://github.com/rkendel1/tokens",
   "author": "thevangelist <info@esajuhana.com>",
   "license": "MIT",
   "dependencies": {

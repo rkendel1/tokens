@@ -10,13 +10,26 @@ Extract a website's design system into design tokens in a few seconds: logo, col
 
 ## Install
 
-Install globally: `npm install -g dembrandt`
+**Note**: This is a fork with additional features. Install from GitHub:
 
 ```bash
+# Install globally from GitHub
+npm install -g github:rkendel1/tokens
+
+# Use the CLI
 dembrandt example.com
 ```
 
-Or use npx without installing: `npx dembrandt example.com`
+Or clone and run locally:
+
+```bash
+git clone https://github.com/rkendel1/tokens.git
+cd tokens
+npm install
+node index.js example.com
+```
+
+See [INSTALL.md](./INSTALL.md) for more installation options including npm link, project dependencies, and troubleshooting.
 
 Requires Node.js 18+
 
