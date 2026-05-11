@@ -32,7 +32,7 @@ WORKDIR /opt/tokens
 # Copy package files first for better layer caching
 COPY package*.json ./
 
-# Install all dependencies including devDependencies for build tools
+# Install production dependencies only
 RUN npm ci --omit=dev
 
 # Install Playwright browsers
