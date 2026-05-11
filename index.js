@@ -109,13 +109,17 @@ program
         try {
           const isMultiPage = opts.pages || opts.sitemap;
           const maxPages = (opts.pages || 5) - 1; // -1 because homepage counts
+          // Auto-discover top 3 scored pages (prioritizes /contact, /about) if not explicitly set
+          const autoDiscover = opts.pages || opts.sitemap ? null : 3;
+          const discoverCount = options.discoverLinks || autoDiscover;
+
           result = await extractBranding(url, spinner, browser, {
             navigationTimeout: 90000,
             darkMode: opts.darkMode,
             mobile: opts.mobile,
             slow: opts.slow,
             screenshotPath: opts.screenshot,
-            discoverLinks: isMultiPage && !opts.sitemap ? maxPages : null,
+            discoverLinks: discoverCount,
           });
 
           // Multi-page crawl
@@ -153,12 +157,13 @@ program
                 await new Promise(r => setTimeout(r, 2000 + Math.random() * 3000));
 
                 try {
-                  const pageResult = await extractBranding(pageUrl, spinner, browser, {
-                    navigationTimeout: 90000,
-                    darkMode: opts.darkMode,
-                    mobile: opts.mobile,
-                    slow: opts.slow,
-                  });
+              const pageResult = await extractBranding(pageUrl, spinner, browser, {
+                navigationTimeout: 90000,
+                darkMode: opts.darkMode,
+                mobile: opts.mobile,
+                slow: opts.slow,
+                discoverLinks: null, // No further discovery on sub-pages
+              });
                   delete pageResult._discoveredLinks;
                   allResults.push(pageResult);
                 } catch (err) {
