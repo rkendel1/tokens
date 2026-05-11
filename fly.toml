@@ -13,6 +13,9 @@ primary_region = "iad"
   # Disable browser sandbox in containerized environment
   # Set BROWSER_CDP_ENDPOINT if connecting to external browser
 
+# HTTP service configuration
+# Note: Only relevant when running in MCP hosted server mode (mcp-hosted.js)
+# For CLI-only usage, this section can be removed or ignored
 [http_service]
   internal_port = 3001
   force_https = true

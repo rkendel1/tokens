@@ -90,10 +90,10 @@ fly scale count 1
 
 The `fly.toml` file contains the deployment configuration. Key settings:
 
-- **Memory**: 1024 MB (adjust based on workload)
+- **Memory**: 2048 MB (2GB recommended for browser operations)
 - **CPU**: 1 shared CPU
 - **Auto-scaling**: Enabled (stops when idle, starts on demand)
-- **Port**: 3001 (for MCP hosted server)
+- **Port**: 3001 (only used when running MCP hosted server mode)
 
 ### Environment Variables
 
