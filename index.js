@@ -11,8 +11,8 @@ import { program } from "commander";
 import chalk from "chalk";
 import ora from "ora";
 import { chromium, firefox } from "playwright-core";
-import { extractBranding } from "./lib/extractors.js";
-import { displayResults } from "./lib/display.js";
+import { extractBranding, extractContactsOnly } from "./lib/extractors.js";
+import { displayResults, displayContactsOnly } from "./lib/display.js";
 import { toW3CFormat } from "./lib/w3c-exporter.js";
 import { generatePDF } from "./lib/pdf.js";
 import { generateDesignMd } from "./lib/design-md.js";
@@ -45,6 +45,7 @@ program
     return n;
   })
   .option("--sitemap", "Discover pages from sitemap.xml instead of DOM links")
+  .option("--contact-only", "Extract only contact information (emails, phones, addresses, hours)")
   .action(async (input, opts) => {
     let url = input;
     if (!url.startsWith("http://") && !url.startsWith("https://")) {
@@ -107,6 +108,17 @@ program
         }
 
         try {
+          // Contact-only mode: skip design tokens, extract only contact information
+          if (opts.contactOnly) {
+            result = await extractContactsOnly(url, spinner, browser, {
+              navigationTimeout: 90000,
+              slow: opts.slow,
+            });
+
+            // Skip multi-page crawl for contact-only mode (for simplicity)
+            break;
+          }
+
           const isMultiPage = opts.pages || opts.sitemap;
           const maxPages = (opts.pages || 5) - 1; // -1 because homepage counts
           // Auto-discover top 3 scored pages (prioritizes /contact, /about) if not explicitly set
@@ -298,6 +310,9 @@ program
       if (opts.jsonOnly) {
         console.log = originalConsoleLog;
         console.log(JSON.stringify(outputData, null, 2));
+      } else if (opts.contactOnly) {
+        console.log();
+        displayContactsOnly(result);
       } else {
         console.log();
         displayResults(result);
