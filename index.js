@@ -111,7 +111,7 @@ program
           const maxPages = (opts.pages || 5) - 1; // -1 because homepage counts
           // Auto-discover top 3 scored pages (prioritizes /contact, /about) if not explicitly set
           const autoDiscover = opts.pages || opts.sitemap ? null : 3;
-          const discoverCount = options.discoverLinks || autoDiscover;
+          const discoverCount = autoDiscover;
 
           result = await extractBranding(url, spinner, browser, {
             navigationTimeout: 90000,
