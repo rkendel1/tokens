@@ -21,18 +21,22 @@ primary_region = "iad"
   min_machines_running = 0
   processes = ["app"]
 
-  [[http_service.checks]]
-    grace_period = "10s"
-    interval = "30s"
-    method = "GET"
-    timeout = "5s"
-    path = "/"
+  # Health check disabled by default - the MCP server doesn't expose a health endpoint
+  # If running mcp-hosted.js, you can enable checks on the /sse endpoint
+  # [[http_service.checks]]
+  #   grace_period = "10s"
+  #   interval = "30s"
+  #   method = "GET"
+  #   timeout = "5s"
+  #   path = "/sse"
 
 [compute]
   cpu_kind = "shared"
   cpus = 1
   memory_mb = 1024
 
-[metrics]
-  port = 9091
-  path = "/metrics"
+# Metrics endpoint is disabled by default
+# Uncomment if your application exposes metrics
+# [metrics]
+#   port = 9091
+#   path = "/metrics"

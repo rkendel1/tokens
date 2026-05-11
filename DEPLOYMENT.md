@@ -5,7 +5,7 @@ This document provides instructions for deploying the Tokens Extractor to variou
 ## Prerequisites
 
 - Docker and Docker Compose (for containerized deployment)
-- Node.js 20+ (for direct deployment; 18+ may work but 20 is recommended)
+- Node.js 18.x minimum, 20.x recommended (Dockerfile uses 20.x)
 - fly CLI (for fly.io deployment)
 
 ## Local Deployment

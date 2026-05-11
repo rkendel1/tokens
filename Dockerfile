@@ -36,6 +36,9 @@ COPY package*.json ./
 RUN npm ci --omit=dev
 
 # Install Playwright browsers
+# Both Chromium and Firefox are installed to support the --browser flag
+# This increases image size (~300MB per browser). To reduce image size,
+# install only the browser(s) you need (e.g., just chromium)
 RUN npx playwright install chromium firefox --with-deps
 
 # Copy application code
