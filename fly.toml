@@ -1,0 +1,47 @@
+# Fly.io configuration for Tokens Extractor
+# Deploy with: fly deploy
+
+app = "tokens-extractor"
+primary_region = "iad"
+
+[build]
+  # Use the Dockerfile in the root directory
+  dockerfile = "Dockerfile"
+
+[env]
+  NODE_ENV = "production"
+  # Disable browser sandbox in containerized environment
+  # Set BROWSER_CDP_ENDPOINT if connecting to external browser
+
+# HTTP service configuration
+# Note: Only relevant when running in MCP hosted server mode (mcp-hosted.js)
+# For CLI-only usage, this section can be removed or ignored
+[http_service]
+  internal_port = 3001
+  force_https = true
+  auto_stop_machines = true
+  auto_start_machines = true
+  min_machines_running = 0
+  processes = ["app"]
+
+  # Health check disabled by default - the MCP server doesn't expose a health endpoint
+  # If running mcp-hosted.js, you can enable checks on the /sse endpoint
+  # [[http_service.checks]]
+  #   grace_period = "10s"
+  #   interval = "30s"
+  #   method = "GET"
+  #   timeout = "5s"
+  #   path = "/sse"
+
+[compute]
+  cpu_kind = "shared"
+  cpus = 1
+  # 2GB recommended for browser operations (Chromium/Firefox)
+  # Can be reduced to 1024 if only running the CLI without browsers
+  memory_mb = 2048
+
+# Metrics endpoint is disabled by default
+# Uncomment if your application exposes metrics
+# [metrics]
+#   port = 9091
+#   path = "/metrics"

@@ -14,6 +14,8 @@ Extract design tokens and contact information from any website.
 
 ## Setup
 
+### Local Installation
+
 1. Clone the repository:
 ```bash
 git clone https://github.com/rkendel1/tokens.git
@@ -29,6 +31,20 @@ npm install
 ```bash
 npm run install-browser
 ```
+
+### Docker Installation
+
+Alternatively, use Docker for a containerized environment with all dependencies pre-installed:
+
+```bash
+# Build the image
+docker build -t tokens-extractor .
+
+# Run the extractor
+docker run --rm tokens-extractor example.com
+```
+
+See [DEPLOYMENT.md](DEPLOYMENT.md) for production deployment options including fly.io, Kubernetes, and more.
 
 ## Usage
 

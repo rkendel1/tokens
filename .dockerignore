@@ -1,0 +1,55 @@
+# Git files
+.git
+.gitignore
+.gitattributes
+
+# CI/CD
+.github/
+
+# Node modules (will be installed in Docker)
+node_modules/
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Output
+output/
+
+# Development
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Environment
+.env
+.env.*
+
+# Test files
+test/
+coverage/
+
+# Documentation
+docs/
+CONTRIBUTING.md
+DEVELOPMENT.md
+
+# Examples
+examples/
+
+# Media
+*.mp4
+*.mov
+showcase.png
+
+# Temporary files
+tmp/
+temp/
