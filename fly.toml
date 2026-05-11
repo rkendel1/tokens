@@ -33,7 +33,9 @@ primary_region = "iad"
 [compute]
   cpu_kind = "shared"
   cpus = 1
-  memory_mb = 1024
+  # 2GB recommended for browser operations (Chromium/Firefox)
+  # Can be reduced to 1024 if only running the CLI without browsers
+  memory_mb = 2048
 
 # Metrics endpoint is disabled by default
 # Uncomment if your application exposes metrics

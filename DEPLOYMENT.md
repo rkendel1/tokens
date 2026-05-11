@@ -120,7 +120,7 @@ fly secrets set NODE_ENV=production
 - Use --no-sandbox flag if needed: `node index.js example.com --no-sandbox`
 
 **Out of memory errors:**
-- Increase memory in fly.toml: `memory_mb = 2048`
+- Increase memory in fly.toml: `memory_mb = 2048` (default) or higher
 - Use `--slow` flag for heavy sites
 - Limit concurrent crawling with `--pages 5`
 
@@ -191,7 +191,7 @@ spec:
 
 1. **Dependencies**: Always run `npm ci` instead of `npm install` in production
 2. **Browsers**: Pre-install Playwright browsers in the Docker image
-3. **Memory**: Allocate at least 1GB RAM for browser operations
+3. **Memory**: Allocate at least 2GB RAM for browser operations (Chromium/Firefox need ~300MB each plus Node.js overhead)
 4. **Timeouts**: Use `--slow` flag for heavy or slow-loading sites
 5. **Security**: Use `--no-sandbox` only in trusted containerized environments
 6. **Monitoring**: Monitor memory usage and adjust scaling policies
