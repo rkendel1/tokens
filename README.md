@@ -46,6 +46,14 @@ docker run --rm tokens-extractor example.com
 
 See [DEPLOYMENT.md](DEPLOYMENT.md) for production deployment options including fly.io, Kubernetes, and more.
 
+### Using as a Dependency
+
+If you're integrating tokens-extractor into another application, see the [Using Tokens Extractor as a Dependency](DEPLOYMENT.md#using-tokens-extractor-as-a-dependency) section in DEPLOYMENT.md. Key requirements:
+- Use Debian-based Docker images (`node:20-slim`, not Alpine)
+- Install Playwright system dependencies before cloning/installing tokens
+- Use `main` branch for latest browser installation fixes
+- Example: [examples/bakeoff-dockerfile-corrected](examples/bakeoff-dockerfile-corrected)
+
 ## Usage
 
 Run the extractor directly with Node:

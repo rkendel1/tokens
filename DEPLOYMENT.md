@@ -197,6 +197,49 @@ spec:
 6. **Monitoring**: Monitor memory usage and adjust scaling policies
 7. **Updates**: Regularly update dependencies for security patches
 
+## Using Tokens Extractor as a Dependency
+
+If you're integrating the tokens extractor into another application (e.g., as a subprocess or cloned dependency), follow these guidelines:
+
+### Debian-based Images (Recommended)
+
+Use `node:20-slim` and install system dependencies before cloning/installing tokens:
+
+```dockerfile
+FROM node:20-slim
+
+# Install Playwright system dependencies
+RUN apt-get update && apt-get install -y \
+    git \
+    libnss3 libnspr4 libatk1.0-0 libatk-bridge2.0-0 \
+    libcups2 libdrm2 libdbus-1-3 libxkbcommon0 \
+    libxcomposite1 libxdamage1 libxfixes3 libxrandr2 \
+    libgbm1 libpango-1.0-0 libcairo2 libasound2 \
+    libatspi2.0-0 libx11-xcb1 libxcursor1 libgtk-3-0 \
+    libpangocairo-1.0-0 libcairo-gobject2 libgdk-pixbuf-2.0-0 \
+    fonts-liberation xdg-utils \
+    && rm -rf /var/lib/apt/lists/*
+
+# Clone and install tokens extractor
+RUN git clone https://github.com/rkendel1/tokens.git /opt/tokens \
+  && cd /opt/tokens \
+  && git checkout main \
+  && npm ci --omit=dev
+
+ENV TOKENS_CLI_PATH=/opt/tokens/index.js
+ENV TOKENS_NO_SANDBOX=true
+```
+
+### Alpine-based Images
+
+Alpine requires different dependencies. See [ALPINE-DOCKERFILE.md](./ALPINE-DOCKERFILE.md) for detailed Alpine instructions.
+
+**Key points:**
+- Install system dependencies BEFORE cloning the tokens repo
+- Use `main` branch (not old commits) to get browser installation fixes  
+- The `npm ci --omit=dev` command will automatically install browsers via `@playwright/browser-*` packages
+- Verify installation: `ls -la /root/.cache/ms-playwright/`
+
 ## Architecture Notes
 
 The tokens extractor can be deployed in several modes:

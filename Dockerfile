@@ -47,6 +47,15 @@ COPY package*.json ./
 # will automatically download and install the browsers during npm install
 RUN npm ci --omit=dev
 
+# Verify that Playwright browsers were installed correctly
+# This ensures the build fails early if browsers are missing
+# Uses wildcard to be version-agnostic
+RUN test -n "$(find /root/.cache/ms-playwright -name 'chrome-headless-shell' -o -name 'chromium' 2>/dev/null | head -1)" || \
+    (echo "ERROR: Chromium browser not found after npm install!" && \
+     echo "Browser packages installed:" && \
+     ls -la /root/.cache/ms-playwright/ 2>/dev/null || echo "No browsers found" && \
+     exit 1)
+
 # Copy application code
 COPY . .
 
