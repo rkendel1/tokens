@@ -1,0 +1,79 @@
+# Corrected Bakeoff Dockerfile with Playwright Browser Support
+# This example shows how to use tokens-extractor as a dependency
+
+# syntax=docker/dockerfile:1
+
+# IMPORTANT: Use node:20-slim instead of node:20-alpine
+# Alpine requires different dependencies and may have compatibility issues
+FROM node:20-slim
+
+WORKDIR /app
+
+# Install system dependencies required by Playwright BEFORE installing tokens
+# These dependencies are needed for Chromium/Firefox to run properly
+RUN apt-get update && apt-get install -y \
+    git \
+    # Chromium core dependencies
+    libnss3 \
+    libnspr4 \
+    libatk1.0-0 \
+    libatk-bridge2.0-0 \
+    libcups2 \
+    libdrm2 \
+    libdbus-1-3 \
+    libxkbcommon0 \
+    libxcomposite1 \
+    libxdamage1 \
+    libxfixes3 \
+    libxrandr2 \
+    libgbm1 \
+    libpango-1.0-0 \
+    libcairo2 \
+    libasound2 \
+    libatspi2.0-0 \
+    # Additional dependencies for headless browser
+    libx11-xcb1 \
+    libxcursor1 \
+    libgtk-3-0 \
+    libpangocairo-1.0-0 \
+    libcairo-gobject2 \
+    libgdk-pixbuf-2.0-0 \
+    fonts-liberation \
+    xdg-utils \
+    # Clean up to reduce image size
+    && rm -rf /var/lib/apt/lists/*
+
+# Install bakeoff application dependencies
+COPY package.json package-lock.json ./
+RUN npm ci
+
+# Copy bakeoff application source
+COPY . .
+
+# Clone tokens extractor runtime dependency used by /site-requests endpoint
+# Use main branch to get latest browser installation fixes
+RUN git clone https://github.com/rkendel1/tokens.git /opt/tokens \
+  && cd /opt/tokens \
+  && git checkout main \
+  && npm ci --omit=dev
+
+# Verify that browsers were installed correctly (optional but recommended)
+RUN test -f /root/.cache/ms-playwright/chromium_headless_shell-1217/chrome-headless-shell-linux64/chrome-headless-shell || \
+    (echo "ERROR: Chromium browser not found!" && \
+     echo "Installed browsers:" && \
+     ls -la /root/.cache/ms-playwright/ 2>/dev/null || echo "No browsers found" && \
+     exit 1)
+
+# Set environment variables for tokens extractor
+ENV TOKENS_CLI_PATH=/opt/tokens/index.js
+# Disable browser sandbox in containerized environments (safe in Docker/K8s)
+ENV TOKENS_NO_SANDBOX=true
+
+# Build bakeoff application (if TypeScript compilation is needed)
+RUN npm run build
+
+# Expose runtime port
+EXPOSE 8080
+
+# Start runtime-core HTTP server
+CMD ["npm", "run", "start:prod"]
