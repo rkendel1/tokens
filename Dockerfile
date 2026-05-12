@@ -23,6 +23,16 @@ RUN apt-get update && apt-get install -y \
     libcairo2 \
     libasound2 \
     libatspi2.0-0 \
+    # Missing dependencies identified by Playwright
+    libx11-xcb1 \
+    libxcursor1 \
+    libgtk-3-0 \
+    libpangocairo-1.0-0 \
+    libcairo-gobject2 \
+    libgdk-pixbuf-2.0-0 \
+    # Additional useful dependencies
+    fonts-liberation \
+    xdg-utils \
     # Clean up
     && rm -rf /var/lib/apt/lists/*
 
