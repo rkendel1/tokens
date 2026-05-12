@@ -49,10 +49,11 @@ RUN npm ci --omit=dev
 
 # Verify that Playwright browsers were installed correctly
 # This ensures the build fails early if browsers are missing
-RUN test -f /root/.cache/ms-playwright/chromium_headless_shell-1217/chrome-headless-shell-linux64/chrome-headless-shell || \
+# Uses wildcard to be version-agnostic
+RUN test -n "$(find /root/.cache/ms-playwright -name 'chrome-headless-shell' -o -name 'chromium' 2>/dev/null | head -1)" || \
     (echo "ERROR: Chromium browser not found after npm install!" && \
      echo "Browser packages installed:" && \
-     ls -la /root/.cache/ms-playwright/ && \
+     ls -la /root/.cache/ms-playwright/ 2>/dev/null || echo "No browsers found" && \
      exit 1)
 
 # Copy application code

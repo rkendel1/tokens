@@ -8,7 +8,7 @@
   "scripts": {
     "start": "node index.js",
     "extract": "node index.js",
-    "postinstall": "node -e \"const fs = require('fs'); const os = require('os'); const path = require('path'); const browserPath = path.join(os.homedir(), '.cache', 'ms-playwright', 'chromium_headless_shell-1217'); if (!fs.existsSync(browserPath)) { console.log('Note: Playwright browsers will be installed automatically on first use.'); }\"",
+    "postinstall": "node -e \"const fs = require('fs'); const os = require('os'); const path = require('path'); const cacheDir = path.join(os.homedir(), '.cache', 'ms-playwright'); try { const dirs = fs.readdirSync(cacheDir); const hasChromium = dirs.some(d => d.startsWith('chromium')); if (!hasChromium) { console.log('Note: Playwright browsers will be installed automatically on first use.'); } } catch (e) { /* Cache dir doesn't exist yet */ }\"",
     "local-ui": "cd local-ui && npm install && npm start",
     "install-browser": "npx playwright install chromium firefox || echo 'Playwright browser installation failed. You may need to install system dependencies manually.'",
     "qa:baseline": "node test/qa.mjs --baseline",

@@ -58,7 +58,7 @@ RUN git clone https://github.com/rkendel1/tokens.git /opt/tokens \
   && npm ci --omit=dev
 
 # Verify that browsers were installed correctly (optional but recommended)
-RUN test -f /root/.cache/ms-playwright/chromium_headless_shell-1217/chrome-headless-shell-linux64/chrome-headless-shell || \
+RUN test -n "$(find /root/.cache/ms-playwright -name 'chrome-headless-shell' -o -name 'chromium' 2>/dev/null | head -1)" || \
     (echo "ERROR: Chromium browser not found!" && \
      echo "Installed browsers:" && \
      ls -la /root/.cache/ms-playwright/ 2>/dev/null || echo "No browsers found" && \

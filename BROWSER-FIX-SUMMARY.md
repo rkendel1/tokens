@@ -86,8 +86,8 @@ docker build -t my-app .
 # Check browser installation
 docker run --rm my-app ls -la /root/.cache/ms-playwright/
 
-# Test browser launch
-docker run --rm my-app node -e "import('playwright-core').then(async ({ chromium }) => { const browser = await chromium.launch(); console.log('✓ Browser works!'); await browser.close(); });"
+# Test browser launch (requires Node.js ESM support)
+docker run --rm my-app node --input-type=module -e "import('playwright-core').then(async ({ chromium }) => { const browser = await chromium.launch(); console.log('✓ Browser works!'); await browser.close(); });"
 ```
 
 ## Files Changed in This Fix
